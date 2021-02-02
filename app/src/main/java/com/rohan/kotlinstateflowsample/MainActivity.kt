@@ -1,12 +1,15 @@
 package com.rohan.kotlinstateflowsample
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.rohan.kotlinstateflowsample.databinding.ActivityMainBinding
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 
@@ -16,9 +19,13 @@ class MainActivity : AppCompatActivity() {
     private val binding
         get() = _binding!!
 
-    private val viewModel: MainViewModel by viewModels()
+   // private val viewModel: MainViewModel by viewModels()
 
-    @InternalCoroutinesApi
+    private val viewModel by lazy {
+        ViewModelProvider(this)[MainViewModel::class.java]
+    }
+
+    @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -28,6 +35,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnLogin.setOnClickListener {
             viewModel.login(binding.etUsername.text.toString(), binding.etPassword.text.toString())
+        }
+
+        viewModel.printNumbers()
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.stateFlow.collect {
+                Toast.makeText(this@MainActivity, "" + it, Toast.LENGTH_SHORT).show()
+            }
         }
 
         lifecycleScope.launchWhenCreated {
